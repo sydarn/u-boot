@@ -156,7 +156,7 @@ static const struct rg3xx_model rg3xx_model_details[] = {
 	[RGB30R2] = {
 		.adc_value = 383, /* Gathered from second hand information */
 		.board = "rk3566-powkiddy-rgb30",
-		.board_name = "RGB30",
+		.board_name = "RGB30R2",
 		.fdtfile = DTB_DIR "rk3566-powkiddy-rgb30r2.dtb",
 		.detect_panel = 0,
 	},
@@ -408,6 +408,29 @@ int rgxx3_detect_display(void)
 	return 0;
 }
 
+/*
+ * Detect vdd_cpu regulator, RGB30 has two revisions where this differs.
+ */
+int probe_rgb30r2_detect_vdd_cpu_regulator(void)
+{
+	struct udevice *bus, *dev;
+	int ret;
+
+	ret = uclass_get_device(UCLASS_I2C, 0, &bus);
+	if (ret) {
+		printf("i2c0 bus not found, regulator probe attempt failed.\n");
+        return ret;
+    }
+
+    ret = dm_i2c_probe(bus, RGB30R2_VDD_CPU_REGULATOR_ADDR, 0, &dev);
+	if (ret) {
+		printf("Regulator not found found\n");
+        return ret;
+    }
+
+    return 0;
+}
+
 /* Detect which Anbernic RGXX3 device we are using so as to load the
  * correct devicetree for Linux. Set an environment variable once
  * found. The detection depends on the value of ADC channel 1, the
@@ -419,7 +442,6 @@ int rgxx3_detect_device(void)
 	int ret, i;
 	int board_id = -ENXIO;
 	struct mmc *mmc;
-	struct mmc *rgb30_regulator;
 
 	ret = adc_channel_single_shot("saradc@fe720000", 1, &adc_info);
 	if (ret) {
@@ -463,8 +485,8 @@ int rgxx3_detect_device(void)
 		}
 	}
 
-    if (board_id == RGB30 && !i2c_probe(RGB30R2_VDD_CPU_REGULATOR_ADDR)) {
-        board_id == RGB30R2;
+    if (board_id == RGB30 && probe_rgb30r2_detect_vdd_cpu_regulator() == 0) {
+        board_id = RGB30R2;
     }
 
 	if (board_id < 0)
