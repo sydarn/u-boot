@@ -45,7 +45,7 @@
 #define SARADC_INPUT_SRC_MSK	0x7
 #define SARADC_POWER_CTRL	BIT(3)
 
-#define DTB_DIR			"rockchip/"
+#define DTB_DIR			""
 
 struct rg3xx_model {
 	const u16 adc_value;
