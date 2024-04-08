@@ -21,6 +21,7 @@
 #include <pwm.h>
 #include <stdlib.h>
 #include <video_bridge.h>
+#include <i2c.h>
 
 #define BOOT_BROM_DOWNLOAD	0xef08a53c
 
@@ -46,6 +47,7 @@
 #define SARADC_POWER_CTRL	BIT(3)
 
 #define DTB_DIR			""
+#define RGB30R2_VDD_CPU_REGULATOR_ADDR 0x40
 
 struct rg3xx_model {
 	const u16 adc_value;
@@ -68,6 +70,7 @@ enum rgxx3_device_id {
 	RG353PS,
 	RG353VS,
 	RGARCS,
+	RGB30R2,
 };
 
 static const struct rg3xx_model rg3xx_model_details[] = {
@@ -148,6 +151,13 @@ static const struct rg3xx_model rg3xx_model_details[] = {
 		.board = "rk3566-anbernic-rg-arc-s",
 		.board_name = "Anbernic RG ARC-S",
 		.fdtfile = DTB_DIR "rk3566-anbernic-rg-arc-s.dtb",
+		.detect_panel = 0,
+	},
+	[RGB30R2] = {
+		.adc_value = 383, /* Gathered from second hand information */
+		.board = "rk3566-powkiddy-rgb30",
+		.board_name = "RGB30",
+		.fdtfile = DTB_DIR "rk3566-powkiddy-rgb30r2.dtb",
 		.detect_panel = 0,
 	},
 };
@@ -409,6 +419,7 @@ int rgxx3_detect_device(void)
 	int ret, i;
 	int board_id = -ENXIO;
 	struct mmc *mmc;
+	struct mmc *rgb30_regulator;
 
 	ret = adc_channel_single_shot("saradc@fe720000", 1, &adc_info);
 	if (ret) {
@@ -451,6 +462,10 @@ int rgxx3_detect_device(void)
 			}
 		}
 	}
+
+    if (board_id == RGB30 && !i2c_probe(RGB30R2_VDD_CPU_REGULATOR_ADDR)) {
+        board_id == RGB30R2;
+    }
 
 	if (board_id < 0)
 		return board_id;
