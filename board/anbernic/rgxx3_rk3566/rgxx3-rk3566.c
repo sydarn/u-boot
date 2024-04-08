@@ -5,6 +5,7 @@
 
 #include <abuf.h>
 #include <adc.h>
+#include <asm/arch-rockchip/boot_mode.h>
 #include <asm/io.h>
 #include <command.h>
 #include <display.h>
@@ -220,12 +221,12 @@ void read_func_button(void)
 };
 
 /*
- * Start LED very early so user knows device is on. Set color
- * to red.
+ * Check if rockchip_dnl button is pressed and reboot into rockusb if
+ * true. Start LED very early so user knows device is on. Set color*
  */
 void spl_board_init(void)
 {
-	read_func_button();
+	setup_boot_mode();
 
 	/* Set GPIO0_C5, GPIO0_C6, and GPIO0_C7 to output. */
 	writel(GPIO_WRITEMASK(GPIO_C7 | GPIO_C6 | GPIO_C5) | \
