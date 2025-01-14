@@ -1,0 +1,15 @@
+if TARGET_MIYOO_FLIP_RK3566
+
+config SYS_BOARD
+	default "flip-rk3566"
+
+config SYS_VENDOR
+	default "miyoo"
+
+config SYS_CONFIG_NAME
+	default "miyoo-flip-rk3566"
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+
+endif
